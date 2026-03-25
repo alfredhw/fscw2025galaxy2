@@ -667,7 +667,9 @@ async function assignPositions(mode, instant) {
     const pos = getPos(i, sorted.length);
     s.tx = pos.x;
     s.ty = pos.y;
-    s.baseSize = (1.5 + seededRand(s.idx * 2) * 2.5) * S;
+    // Scale down halo on large displays — cap S contribution to star size
+    const sizeCap = Math.min(S, 0.85 + S * 0.35);
+    s.baseSize = (1.5 + seededRand(s.idx * 2) * 2.5) * sizeCap;
     if (instant) {
       s.x = s.tx;
       s.y = s.ty;
@@ -800,9 +802,9 @@ function draw() {
     }
 
     // Twinkle
-    // Dual-frequency twinkle: fast subtle brightness + slow size pulse
-    const tw1 = 0.6 + 0.4 * Math.sin(s.twinkle + now * 0.001 * s.twinkleSpeed);
-    const tw2 = 0.88 + 0.12 * Math.sin(s.twinkle2 + now * 0.001 * s.twinkleSpeed2);
+    // Dual-frequency twinkle: fast brightness + slow size pulse (more pronounced)
+    const tw1 = 0.35 + 0.65 * Math.sin(s.twinkle + now * 0.001 * s.twinkleSpeed);
+    const tw2 = 0.75 + 0.25 * Math.sin(s.twinkle2 + now * 0.001 * s.twinkleSpeed2);
     const alpha = s.alpha * tw1;
 
     const color = COLLEGE_COLORS[s.col];
@@ -811,18 +813,21 @@ function draw() {
     const sizeMult = isHovered ? 2.2 : isSelected ? 1.8 : tw2;
     const size = s.baseSize * sizeMult;
 
+    // Halo scale: shrink on large screens to reduce crowding
+    const haloScale = S > 1.2 ? 0.65 + 0.55 / S : 1.0;
+
     // OA glow
     if (s.oa && s.alpha > 0.5) {
-      ctx.fillStyle = `rgba(0,212,170,${alpha * 0.12})`;
+      ctx.fillStyle = `rgba(0,212,170,${alpha * 0.10})`;
       ctx.beginPath();
-      ctx.arc(drawX, drawY, size * 4, 0, Math.PI * 2);
+      ctx.arc(drawX, drawY, size * 3.2 * haloScale, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Outer glow
-    ctx.fillStyle = `rgba(${color.r},${color.g},${color.b},${alpha * 0.2})`;
+    ctx.fillStyle = `rgba(${color.r},${color.g},${color.b},${alpha * 0.18})`;
     ctx.beginPath();
-    ctx.arc(drawX, drawY, size * 2.5, 0, Math.PI * 2);
+    ctx.arc(drawX, drawY, size * 2.0 * haloScale, 0, Math.PI * 2);
     ctx.fill();
 
     // Main star body
