@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -441,7 +442,9 @@ const stars = RAW.map((r, i) => ({
   alpha: 1, targetAlpha: 1,
   size: 0, baseSize: 0,
   twinkle: Math.random() * Math.PI * 2,
-  twinkleSpeed: 0.3 + Math.random() * 0.7,
+  twinkleSpeed: 0.15 + Math.random() * 0.5,
+  twinkle2: Math.random() * Math.PI * 2,
+  twinkleSpeed2: 0.08 + Math.random() * 0.2,
 }));
 
 // ── Compute stats ──
@@ -507,7 +510,7 @@ COLLEGES.forEach((name, i) => {
   item.dataset.col = i;
   item.innerHTML = `<div class="legend-dot" style="background:${COLLEGE_COLORS[i].hex}"></div>` +
     `<span class="legend-label">${name}</span>` +
-    `<span class="legend-count">${collegeCounts[i]}</span>`;
+    ``;
   item.addEventListener('click', () => toggleCollegeFilter(i));
   legendEl.appendChild(item);
 });
@@ -570,15 +573,16 @@ function galaxyPosition(i, total) {
   const arm = i % arms;
   const armAngle = (arm / arms) * Math.PI * 2;
   const t = (i / total);
-  const radius = (0.05 + t * 0.42) * Math.min(W, H);
-  const spiralAngle = armAngle + t * 4.5 * Math.PI;
-  // Add scatter
-  const scatter = radius * 0.18;
+  const maxR = Math.min(W, H) * 0.48;
+  const radius = (0.08 + t * 0.92) * maxR;
+  const spiralAngle = armAngle + t * 3.5 * Math.PI;
+  // Add scatter — more at edges
+  const scatter = radius * 0.22 + 8 * S;
   const sx = (seededRand(i * 3) - 0.5) * scatter;
   const sy = (seededRand(i * 3 + 1) - 0.5) * scatter;
   return {
     x: cx + Math.cos(spiralAngle) * radius + sx,
-    y: cy + Math.sin(spiralAngle) * radius * 0.55 + sy  // flatten vertically for ellipse
+    y: cy + Math.sin(spiralAngle) * radius * 0.6 + sy  // flatten vertically for ellipse
   };
 }
 
@@ -805,13 +809,16 @@ function draw() {
     }
 
     // Twinkle
-    const twinkle = 0.65 + 0.35 * Math.sin(s.twinkle + now * 0.001 * s.twinkleSpeed);
-    const alpha = s.alpha * twinkle;
+    // Dual-frequency twinkle: fast subtle brightness + slow size pulse
+    const tw1 = 0.6 + 0.4 * Math.sin(s.twinkle + now * 0.001 * s.twinkleSpeed);
+    const tw2 = 0.88 + 0.12 * Math.sin(s.twinkle2 + now * 0.001 * s.twinkleSpeed2);
+    const alpha = s.alpha * tw1;
 
     const color = COLLEGE_COLORS[s.col];
     const isHovered = s === hoveredStar;
     const isSelected = s === selectedStar;
-    const size = s.baseSize * (isHovered ? 2.2 : isSelected ? 1.8 : 1);
+    const sizeMult = isHovered ? 2.2 : isSelected ? 1.8 : tw2;
+    const size = s.baseSize * sizeMult;
 
     // OA glow
     if (s.oa && s.alpha > 0.5) {
