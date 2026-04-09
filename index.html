@@ -3725,24 +3725,23 @@ const DEPT_TO_BUCKET = {
   "VP Research & Economic Dev":3
 };
 
-// Title-based fallback classification for records with no department
-function classifyByTitle(title) {
-  if (!title) return 3; // default Social Sciences
-  const t = title.toLowerCase();
-  // Life Sciences keywords
-  if (/\b(medic|clinic|surg|cardio|cancer|tumor|oncol|cell|gene|genom|protein|molecul|immun|infect|virus|bacter|patho|pharma|drug|therap|nurs|health|epidem|biomark|neural|neuro|brain|dementia|alzheimer|diabet|kidney|liver|lung|cardiac|vascul|dental|oral|pregnan|obstet|pediatr|geriatr|aging|nutrition|diet|obes|microbi|anatomy|physiol|biolog|biosci|biotech|diseas|symptom|patient|hospita|transplant)\b/.test(t)) return 0;
-  // Physical Sciences keywords
-  if (/\b(physic|chemi|math|geolog|atmospher|climate|weather|mineral|crystall|spectro|quantum|astro|planet|solar|magnetic|seismic|geograph|environ|pollut|soil|water quality|hydro|isotop|element|equation|theorem|algebra|statistic|topolog|calculus)\b/.test(t)) return 1;
-  // Engineering & Technology keywords
-  if (/\b(engineer|comput|software|algorithm|machine learn|deep learn|artificial intellig|neural network|robot|autom|drone|UAS|unmanned|aviat|aerospac|flight|pilot|cyber|network|wireless|sensor|manufactur|3d print|additive|petroleum|energy harvest|renewable|turbine|circuit|semiconductor)\b/i.test(t)) return 2;
-  // Arts & Humanities keywords
-  if (/\b(music|compos|symphony|orchestra|concert|opera|choir|art\b|artist|paint|sculpt|photograph|theater|theatre|drama|fiction|novel|poet|liter|narrat|histor|archaeol|philos|ethic|moral|relig|theolog|linguist|translat|rhetor|humanit|museum|gallery|film|cinema)\b/.test(t)) return 4;
-  // Social Sciences (default catch-all, but also explicit)
+// Title+publication-based fallback classification for records with no department
+function classifyByTitle(title, pub) {
+  const t = ((title || '') + ' ' + (pub || '')).toLowerCase();
+  // Life Sciences
+  if (/\b(medic|clinic|surg|cardio|cancer|tumor|oncol|cell\b|gene\b|gene |genom|protein|molecul|immun|infect|virus|bacter|patho|pharma|drug\b|therap|nurs|health|epidem|biomark|neural|neuro|brain|dementia|alzheimer|diabet|kidney|liver|lung|cardiac|vascul|dental|oral\b|pregnan|obstet|pediatr|geriatr|aging|nutrition|diet\b|obes|microbi|anatomy|physiol|biolog|biosci|biotech|diseas|symptom|patient|hospita|transplant|orthop|arthro|ligament|tendon|bone\b|joint\b|knee\b|shoulder|ankle|spine|spinal|vertebr|biomech|musculoskel|radiology|imaging|MRI\b|CT\b|ultrasound|dermat|ophthal|gastro|hepat|pulmon|renal|nephro|endocrin|hematol|urol|otolaryngol|anesthes|critical care|emergency med|trauma\b|wound|blood\b|platelet|coagul|thrombo|hemorrh|ischemi|fibrosis|inflammat|apoptosis|cytokine|antibod|antigen|receptor|enzyme|peptide|amino acid|stem.cell|progenitor|organoid|CRISPR|plasmid|transfect|bioinfo|phylogenet|taxonom|morphometr|parasit|helminth|schistosom|nematod|ecolog|species\b|habitat|wildlife|fish\b|aquatic|marine\b|entomol|ornithol|botan|plant\b|agri|crop\b|agron|forest|conserv bio|veterinar|zoolog|food sci|food safe|nutrien|vitamin|biomarker|proteom|metabolom|transcriptom|epigenet|methylat|telomer|mitochond|ribosom|chromosom|allerg|asthma|rhinit|sinusit|pneumon|bronch|influenza|covid|sars|vaccin|serology|PCR\b|ELISA\b|assay|biocompat|scaffold|tissue engineer|drug delivery|nanomed|biosensor|antimicrob|antibiotic|antifung|antivir|analges|opioid|cannabin|psychopharmac|nicotine|alcohol\b|tobacco|smok|cigarett|vaping|cureus|BMC\b|PLOS|PLoS|JAMA|lancet|BMJ\b|annals of|physeal|injur|fracture.*(model|fixat|repair|heal)|meniscus|rotat.?or cuff|labr|hallux|bunion|malleol|tibia|femur|patella|humer|radius|ulna|calcaneus|metatar|disloc|sublux|sprain|contusion|concuss|athlete|sports med|rehabilit|gait\b|amputat|prosthe|acta parasit)\b/.test(t)) return 0;
+  if (/journal of.*(immun|parasit|helminth|dermat|surg|bone|ortho|pharm|nutrition|food|ecol|fish|wildlife|plant|agri|cell|molecul|biochem|biophys|microb|virol|genet|neurosci|anatomy|physiol)/.test(t)) return 0;
+  // Physical Sciences
+  if (/\b(physic|chemi|math\b|geolog|geosci|geophys|atmospher|climate|weather|mineral|crystall|spectro|quantum|astro|planet|solar|magnetic|seismic|geograph|environ|pollut|soil\b|water quality|hydrol|isotop|element\b|equation|theorem|algebra|statistic|topolog|calculus|sediment|stratigraph|lithol|porosity|permeab|fossil|paleont|tecton|volcan|erosion|glacier|ocean|meteorol|aerosol|ozone|methane|nitrogen|phosphor|carbon\b|oxide|sulfur|hydrogen\b|ammonia|radiative|petrophysic|diagene|sequestrat|subsurface|aquifer|groundwater|porous media|fluid flow|reservoir\b|geomechan|geothermal|petrograp|geochem|palynolog|biostratigraph|well log|core sample|remote sens|GIS\b|LIDAR|doppler|radar\b|SPE\b|physical review|american meteorolog|geoenergy|greenhouse gas|AIP\b|emission.*(air|quality|summertime|ozone|particul)|surface water|streamflow|runoff|watershed|catchment|fluvial|forecast.*(precipit|temperature|weather)|convect|supercell|mesoscale|synoptic|cyclone|anticyclone|vorticity|baroclinic|rawinsonde|radiosonde|sounding|NWP\b|WRF\b|reanalysis|NCEP|ECMWF|ERA5|CMIP|downscal|bias correct|parameteriz|boundary layer|surface flux|land.surface|snow.*(cover|pack|depth|water)|permafrost|tundra|arctic|antarctic|polar\b|cryospher|freeze.thaw|blizzard|thunderstorm|lightning|wildfire.*(climat|weather|predict)|tropical cyclone|drought\b|cirrus|rarefied|hypersonic|ionized)\b/.test(t)) return 1;
+  // Engineering & Technology
+  if (/\b(engineer|comput|software|algorithm|machine learn|deep learn|artificial intellig|neural network|robot|autom|drone|UAS\b|unmanned|aviat|aerospac|flight\b|pilot\b|cyber|network\b|wireless|sensor\b|manufactur|3d.print|additive|petroleum|energy\b|harvest|renewable|turbine|circuit|semiconductor|alloy|corros|weld|combust|propuls|fuel\b|thermal\b|acoustic|optic|laser|satellite|drill|geotechn|polymer|catalys|electrochem|photovoltaic|battery|superconductor|nanopart|nano.?tech|biomass|lignin|cellulose|biodiesel|ethanol|gasif|pyrolysis|plasma\b|desalinat|wastewater|CO2\b|CCS\b|CCUS|injection.*(well|reservoir|CO2)|well\b.*(integrity|bore|drill|cement)|EOR\b|enhanced oil|shale|tight.*(oil|gas)|horizontal well|proppant|surfactant flood|waterflood|decline curve|inflow performance|material\b.*(strength|testing|properti|failure|fatigue)|finite element|computational fluid|CFD\b|FEA\b|signal process|antenna|telecomm|IEEE|energies\b|instruments\b|LSTM|autoencoder|anomaly detect|transformer.*(model|based|log|detect|archit)|BERT\b|GAN\b|convolut|recurrent|reinforcement learn|classif.*(model|network|image)|object detect|segment|feature extract|natural language process|NLP\b|chatbot|LLM\b|generative AI|embeddi|hyperspectr|lidar|point cloud|image process|torque|impinge|heat transfer|pin.fin|cooling|nozzle|ASME\b|ACS omega|rGO|graphene|electrode|nanocomposit|nanostructur|synthes.*(facile|hydrotherm|solvotherm|electrospinn)|life cycle assess|NDT|non.destruct|smart contract|blockchain|decentral.*(ledger|feder|system)|IoT\b|internet of things|intrusion detect|threat detect|malware|phishing|ransomware|vulnerabil|penetration test|access control|encrypt|firewall|botnet|DDoS|denial of service|zero.day|exploit|fog comput|edge comput|cloud.*(comput|secur)|container|virtuali[zs]|microservice|DevOps|scalab|5G\b|6G\b|MIMO\b|OFDM|beamform|spectrum|modulation|GPS.*(spoof|secur|navig)|GNSS|inertial|guidance|autopilot|trajectory|payload|telemetry|digital twin|simulat.*(numer|comput|monte carlo)|swarm|genetic algorithm|particle swarm|metaheuristic|federated.*(learn|detect|intrusion)|capsule network|ensemble.*(model|detect|learn)|ground penetrat|AIAA\b)\b/i.test(t)) return 2;
+  // Arts & Humanities
+  if (/\b(music|compos|symphony|orchestra|concert|opera|choir|art\b|artist|paint|sculpt|photograph|theater|theatre|drama|fiction|novel|poet|liter|narrat|histor|archaeol|philos|ethic\b|moral|relig|theolog|linguist|translat|rhetor|humanit|museum|gallery|film\b|cinema|danc|choreograph|ceramic|textile|printmak|calligraph|typograph|cultur|folklor|mytholog|semiot|hermeneutic|phenomenolog|postmodern|decoloni|medieval|renaissance|baroque|jazz|blues|gospel|folk.*(music|song|tale)|oral tradition)\b/.test(t)) return 4;
   return 3;
 }
 
 // Remap college index based on department
-function remapBucket(dept, oldCol, title) {
+function remapBucket(dept, oldCol, title, pub) {
   if (dept && DEPT_TO_BUCKET[dept] !== undefined) return DEPT_TO_BUCKET[dept];
   // Try partial match on first segment
   if (dept) {
@@ -3752,14 +3751,14 @@ function remapBucket(dept, oldCol, title) {
     }
   }
   // Fall back to title-based classification
-  return classifyByTitle(title);
+  return classifyByTitle(title, pub);
 }
 
 // ── Parse data ──
 const stars = RAW.map((r, i) => ({
   idx: i,
   t: r[0], a: r[1], pub: r[2], year: r[3], doi: r[4],
-  dept: r[5], col: remapBucket(r[5], r[6], r[0]), cat: r[7],
+  dept: r[5], col: remapBucket(r[5], r[6], r[0], r[2]), cat: r[7],
   oa: r[8] === 1, oaStat: r[9], oaUrl: r[10],
   // Position state
   x: 0, y: 0, tx: 0, ty: 0,
