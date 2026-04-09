@@ -4438,9 +4438,9 @@ function showCard(s, screenX, screenY) {
   const titleEl = document.getElementById('card-title');
   const doiUrl = s.doi.startsWith('http') ? s.doi : 'https://doi.org/' + s.doi;
   if (s.oa && s.doi) {
-    titleEl.innerHTML = '<a href="' + doiUrl + '" target="_blank">' + title + '</a>';
+    titleEl.innerHTML = '<a href="' + doiUrl + '" onclick="window.open(this.href,\'_blank\',\'width=900,height=700,scrollbars=yes,resizable=yes\');return false;">' + title + '</a>';
   } else if (s.doi) {
-    titleEl.innerHTML = '<a href="' + doiUrl + '" target="_blank" style="border-bottom-color:rgba(255,255,255,0.2)">' + title + '</a>';
+    titleEl.innerHTML = '<a href="' + doiUrl + '" onclick="window.open(this.href,\'_blank\',\'width=900,height=700,scrollbars=yes,resizable=yes\');return false;" style="border-bottom-color:rgba(255,255,255,0.2)">' + title + '</a>';
   } else {
     titleEl.textContent = title;
   }
